@@ -1,3 +1,5 @@
+import spark.ModelAndView;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
@@ -8,6 +10,7 @@ public class Test {
     public static void main(String[] args) {
 
         ObjToJSON o2j = new ObjToJSON();
+        FreeMarkerTemplateEngine ftl = new FreeMarkerTemplateEngine();
 
         //Set public folder as HTML file location
         staticFileLocation("/public");
@@ -32,9 +35,25 @@ public class Test {
             return result;
         });
 
-        get("/browserinfo", (request, response) -> {
-           return request.userAgent();
-        });
+        //FreeMarker Template
+        get("/templateTest", (request, response) -> {
+            Map<String, Object> attributes = new HashMap<String, Object>();
+            attributes.put("title", "Template Test");
+            attributes.put("param1", "HELLO");
+            attributes.put("param2", "WORLD");
+
+            return new ModelAndView(attributes, "two_params.ftl");
+        }, ftl);
+
+        get("/templateTest/:name/:age", (request, response) -> {
+            Map<String, Object> attributes = new HashMap<String, Object>();
+
+            attributes.put("title", "Name Age Test");
+            attributes.put("name", request.params(":name"));
+            attributes.put("age", request.params(":age"));
+
+            return new ModelAndView(attributes, "NameAndAge.ftl");
+        }, ftl);
 
         //test ObjToJSON
         class Person
