@@ -111,7 +111,7 @@ public class Test {
                 if (passwordEncryptor.checkPassword(password, user.getPassword())) {
                     return user;
                 } else {
-                    response.status(500);
+                    response.status(401);
                     return "Wrong Password!";
                 }
 
