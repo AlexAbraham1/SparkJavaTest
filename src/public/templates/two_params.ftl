@@ -1,6 +1,6 @@
 <#import "lib/main.ftl" as u>
 
-<@u.page>
+<@u.page title="Template Test">
     <h1>PARAMETER 1</h1>
     <h2>${param1}</h2>
 

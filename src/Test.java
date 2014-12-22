@@ -1,16 +1,33 @@
+import com.j256.ormlite.dao.Dao;
+import com.j256.ormlite.dao.DaoManager;
+import com.j256.ormlite.jdbc.JdbcConnectionSource;
+import com.j256.ormlite.support.ConnectionSource;
+import com.j256.ormlite.table.TableUtils;
 import spark.ModelAndView;
 
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.TreeMap;
 
 import static spark.Spark.*;
 
 public class Test {
-    public static void main(String[] args) {
+
+    //MySQL Info for a local vagrant lamp stack
+    private static String databaseURL = "jdbc:mysql://127.0.0.1:8889/spark";
+    private static String databaseUser = "root";
+    private static String databasePassword = "root";
+
+
+    public static void main(String[] args) throws SQLException {
 
         ObjToJSON o2j = new ObjToJSON();
         FreeMarkerTemplateEngine ftl = new FreeMarkerTemplateEngine();
+
+        //SQL Database Stuff
+        ConnectionSource connectionSource = getConnectionSource();
+        Dao<User, String> userDao = DaoManager.createDao(connectionSource, User.class); //Create Data Access Object
+        TableUtils.createTableIfNotExists(connectionSource, User.class); //Create users table iff it doesn't exist
 
         //Set public folder as HTML file location
         staticFileLocation("/public");
@@ -38,7 +55,6 @@ public class Test {
         //FreeMarker Template
         get("/templateTest", (request, response) -> {
             Map<String, Object> attributes = new HashMap<String, Object>();
-            attributes.put("title", "Template Test");
             attributes.put("param1", "HELLO");
             attributes.put("param2", "WORLD");
 
@@ -48,44 +64,57 @@ public class Test {
         get("/templateTest/:name/:age", (request, response) -> {
             Map<String, Object> attributes = new HashMap<String, Object>();
 
-            attributes.put("title", "Name Age Test");
             attributes.put("name", request.params(":name"));
             attributes.put("age", request.params(":age"));
 
             return new ModelAndView(attributes, "NameAndAge.ftl");
         }, ftl);
 
-        //test ObjToJSON
-        class Person
-        {
-            private Map<String, Object> map = new TreeMap<String, Object>();
 
 
-            public Person(String name)
-            {
-                map.put("Name", name);
-            }
+        //SQL TEST ROUTES
 
-            public Person(String name, int age)
-            {
-                map.put("Name", name);
-                map.put("Age", age);
-            }
-            public Person(String name, int age, String color)
-            {
-                map.put("Name", name);
-                map.put("Age", age);
-                map.put("Favorite Color", color);
-            }
+        //This post method works by sending a POST request to a URL like
+        //http://localhost:4567/users?username=alex&email=alex@abraham.net
+        post("/users", (request, response) -> {
+            String username = request.queryParams("username");
+            String email = request.queryParams("email");
 
-            public Map<String, Object> getData()
-            {
-                return map;
+            User newUser = new User();
+            newUser.setUsername(username);
+            newUser.setEmail(email);
+
+            userDao.create(newUser); //Method to add new user to database
+
+            response.status(201);
+
+            return response;
+        });
+
+        get("/user/:id", (request, response) -> {
+
+            User user = userDao.queryForId(request.params(":id"));
+
+            if (user != null) {
+                return user;
+            } else {
+                response.status(404);
+                return "User Not Found!";
             }
+        }, o2j);
+
+    }
+
+    private static ConnectionSource getConnectionSource() {
+
+        try {
+            ConnectionSource connectionSource = new JdbcConnectionSource(databaseURL);
+            ((JdbcConnectionSource)connectionSource).setUsername(databaseUser);
+            ((JdbcConnectionSource)connectionSource).setPassword(databasePassword);
+            return connectionSource;
+        } catch (SQLException e) {
+            throw new IllegalArgumentException(e);
         }
 
-        get("/jsonTest", (request, response) -> {
-           return new Person("Alex Abraham", 20, "Blue").getData();
-        }, o2j);
     }
 }
