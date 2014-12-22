@@ -1,7 +1,7 @@
 import com.google.gson.Gson;
 import spark.ResponseTransformer;
 
-public class ObjToJSON implements ResponseTransformer {
+public class JSONTransformer implements ResponseTransformer {
 
         private Gson gson = new Gson();
 

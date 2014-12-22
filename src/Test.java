@@ -3,6 +3,8 @@ import com.j256.ormlite.dao.DaoManager;
 import com.j256.ormlite.jdbc.JdbcConnectionSource;
 import com.j256.ormlite.support.ConnectionSource;
 import com.j256.ormlite.table.TableUtils;
+import org.jasypt.util.password.BasicPasswordEncryptor;
+import org.jasypt.util.password.StrongPasswordEncryptor;
 import spark.ModelAndView;
 
 import java.sql.SQLException;
@@ -21,7 +23,7 @@ public class Test {
 
     public static void main(String[] args) throws SQLException {
 
-        ObjToJSON o2j = new ObjToJSON();
+        JSONTransformer json = new JSONTransformer();
         FreeMarkerTemplateEngine ftl = new FreeMarkerTemplateEngine();
 
         //SQL Database Stuff
@@ -80,9 +82,16 @@ public class Test {
             String username = request.queryParams("username");
             String email = request.queryParams("email");
 
+            //Get password and encrypt
+            String password = request.queryParams("pass");
+            StrongPasswordEncryptor passwordEncryptor = new StrongPasswordEncryptor();
+            password = passwordEncryptor.encryptPassword(password);
+
+
             User newUser = new User();
             newUser.setUsername(username);
             newUser.setEmail(email);
+            newUser.setPassword(password);
 
             userDao.create(newUser); //Method to add new user to database
 
@@ -91,17 +100,26 @@ public class Test {
             return response;
         });
 
-        get("/user/:id", (request, response) -> {
+        get("/user/:id/:pass", (request, response) -> {
 
             User user = userDao.queryForId(request.params(":id"));
+            StrongPasswordEncryptor passwordEncryptor = new StrongPasswordEncryptor();
+            String password = request.params(":pass");
 
             if (user != null) {
-                return user;
+
+                if (passwordEncryptor.checkPassword(password, user.getPassword())) {
+                    return user;
+                } else {
+                    response.status(500);
+                    return "Wrong Password!";
+                }
+
             } else {
                 response.status(404);
                 return "User Not Found!";
             }
-        }, o2j);
+        }, json);
 
     }
 

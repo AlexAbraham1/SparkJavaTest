@@ -4,7 +4,7 @@ import com.j256.ormlite.table.DatabaseTable;
 @DatabaseTable(tableName = "users") //Define SQL Table
 public class User
 {
-    @DatabaseField(generatedId = true) //auto-incrament
+    @DatabaseField(generatedId = true) //auto-increment
     private int id;
 
     @DatabaseField
@@ -12,6 +12,9 @@ public class User
 
     @DatabaseField
     private String email;
+
+    @DatabaseField
+    private String password; //This should be encrypted!!!
 
     public User() {} //ORMLite requires an empty constructor to do its magic
 
@@ -23,5 +26,7 @@ public class User
     public String getEmail() {return this.email;}
     public void setEmail(String email) {this.email = email;}
 
+    public String getPassword() {return password;}
+    public void setPassword(String password) {this.password = password;}
 
 }
