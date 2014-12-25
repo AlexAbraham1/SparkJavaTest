@@ -19,7 +19,7 @@
     <div class="row">
 
         <!-- LOCAL INFORMATION -->
-        <div class="col-sm-6">
+        <div class="col-md-6">
             <div class="well">
                 <h3><span class="fa fa-user"></span> Local</h3>
 

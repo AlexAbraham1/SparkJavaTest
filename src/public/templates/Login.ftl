@@ -24,7 +24,7 @@
         <form action="/login" method="post">
             <div class="form-group">
                 <label>Email</label>
-                <input type="text" class="form-control" name="email" value=${email}>
+                <input type="text" class="form-control" name="email" value="${email}">
             </div>
             <div class="form-group">
                 <label>Password</label>

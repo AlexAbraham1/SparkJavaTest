@@ -27,11 +27,11 @@
         <form action="/signup" method="post">
             <div class="form-group">
                 <label>Full Name</label>
-                <input type="text" class="form-control" name="fullname" value=${fullname}>
+                <input type="text" class="form-control" name="fullname" value="${fullname}">
             </div>
             <div class="form-group">
                 <label>Email</label>
-                <input type="text" class="form-control" name="email" value=${email}>
+                <input type="text" class="form-control" name="email" value="${email}">
             </div>
             <div class="form-group">
                 <label>Password</label>
