@@ -3,6 +3,8 @@ import com.j256.ormlite.dao.DaoManager;
 import com.j256.ormlite.jdbc.JdbcConnectionSource;
 import com.j256.ormlite.support.ConnectionSource;
 import com.j256.ormlite.table.TableUtils;
+import com.sun.org.apache.xpath.internal.operations.Mod;
+import spark.Filter;
 import spark.ModelAndView;
 
 import java.security.NoSuchAlgorithmException;
@@ -37,15 +39,10 @@ public class Test {
         staticFileLocation("/public");
 
         //Filter for authentication
-        before("/me", (request, response) -> {
-
-            if (request.session(true).attribute("user") == null) { //No user in session
-                halt(401, "Not Logged In!");
-            }
-        });
+        setupProtectedFilters();
 
         //Simple GET route
-        get("/hello", (req, res) -> "Hello World");
+        get("/", (request, response) -> new ModelAndView(null, "home.ftl"), ftl);
 
         //route with parameter
         get("/hello/:name", (request, response) -> {
@@ -63,28 +60,6 @@ public class Test {
             response.type("text/html");
             return result;
         });
-
-        //FreeMarker Template
-        get("/templateTest", (request, response) -> {
-            Map<String, Object> attributes = new HashMap<String, Object>();
-            attributes.put("param1", "HELLO");
-            attributes.put("param2", "WORLD");
-
-            return new ModelAndView(attributes, "two_params.ftl");
-        }, ftl);
-
-        get("/templateTest/:name/:age", (request, response) -> {
-            Map<String, Object> attributes = new HashMap<String, Object>();
-
-            attributes.put("name", request.params(":name"));
-            attributes.put("age", request.params(":age"));
-
-            return new ModelAndView(attributes, "NameAndAge.ftl");
-        }, ftl);
-
-
-
-        //SQL TEST ROUTES
 
         get("/signup", (request, response) -> {
             return new ModelAndView(null, "signup.ftl");
@@ -191,11 +166,79 @@ public class Test {
             Map<String, Object> attributes = new HashMap<String, Object>();
 
             User user = request.session(true).attribute("user");
-            attributes.put("id", user.getId());
-            attributes.put("fullname", user.getName());
-            attributes.put("email", user.getEmail());
-
+            attributes.put("user", user);
             return new ModelAndView(attributes, "me.ftl");
+        }, ftl);
+
+        post("/passwordReset", (request, response) -> {
+
+            User user = request.session(true).attribute("user");
+
+            String oldPassword = request.queryParams("oldPassword");
+            String newPassword = request.queryParams("newPassword");
+            String newPassword2 = request.queryParams("newPassword2");
+
+            if (oldPassword.equals("")) {
+                response.status(400);
+                Map<String, Object> attributes = new HashMap<String, Object>();
+                attributes.put("badMessage", "You forgot the old password!");
+                attributes.put("user", user);
+                attributes.put("oldPassword", oldPassword);
+                attributes.put("newPassword", newPassword);
+                attributes.put("newPassword2", newPassword2);
+                return modelAndView(attributes, "me.ftl");
+            }
+
+            if (newPassword.equals("") || newPassword2.equals("")) {
+                response.status(400);
+                Map<String, Object> attributes = new HashMap<String, Object>();
+                attributes.put("badMessage", "You forgot the new passwords!");
+                attributes.put("user", user);
+                attributes.put("oldPassword", oldPassword);
+                attributes.put("newPassword", newPassword);
+                attributes.put("newPassword2", newPassword2);
+                return modelAndView(attributes, "me.ftl");
+            }
+
+            if (!validatePassword(oldPassword, user.getPassword())) {
+                response.status(400);
+                Map<String, Object> attributes = new HashMap<String, Object>();
+                attributes.put("badMessage", "Old password didn't match!");
+                attributes.put("user", user);
+                attributes.put("oldPassword", oldPassword);
+                attributes.put("newPassword", newPassword);
+                attributes.put("newPassword2", newPassword2);
+                return modelAndView(attributes, "me.ftl");
+            }
+
+            if (!newPassword.equals(newPassword2)) {
+                response.status(400);
+                Map<String, Object> attributes = new HashMap<String, Object>();
+                attributes.put("badMessage", "New passwords don't match!");
+                attributes.put("user", user);
+                attributes.put("oldPassword", oldPassword);
+                attributes.put("newPassword", newPassword);
+                attributes.put("newPassword2", newPassword2);
+                return modelAndView(attributes, "me.ftl");
+            }
+
+            //Everything is good! Let's change the account password
+            newPassword = hashPassword(newPassword);
+            user.setPassword(newPassword);
+            updateUser(user);
+
+            response.status(200);
+            Map<String, Object> attributes = new HashMap<String, Object>();
+            attributes.put("goodMessage", "Successfully changed password!");
+            attributes.put("user", user);
+            return modelAndView(attributes, "me.ftl");
+        }, ftl);
+
+        get("/logout", (request, response) -> {
+            request.session(true).attribute("user", null);
+            response.status(200);
+            response.redirect("/");
+            return new ModelAndView(null, "redirect.ftl");
         }, ftl);
 
     }
@@ -244,6 +287,15 @@ public class Test {
         }
     }
 
+    private static void updateUser(User user)
+    {
+        try {
+            userDao.update(user);
+        } catch (SQLException e) {
+            throw new IllegalArgumentException(e);
+        }
+    }
+
     private static String hashPassword(String password)
     {
         try {
@@ -276,6 +328,22 @@ public class Test {
 
         } catch (SQLException e) {
             throw new IllegalArgumentException(e);
+        }
+    }
+
+    private static void setupProtectedFilters()
+    {
+        String[] routes = {"/me", "/passwordReset"};
+
+        Filter f = (request, response) -> {
+
+            if (request.session(true).attribute("user") == null) { //No user in session
+                halt(401, "Not Logged In!");
+            }
+        };
+
+        for (String route : routes) {
+            before(route, f);
         }
     }
 }
