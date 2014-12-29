@@ -10,7 +10,7 @@
     <orderEntry type="library" name="com.sparkjava:spark-core:2.1" level="project" />
     <orderEntry type="library" name="com.google.code.gson:gson:2.3" level="project" />
     <orderEntry type="library" name="org.freemarker:freemarker:2.3.20" level="project" />
-    <orderEntry type="library" name="com.j256.ormlite:ormlite-jdbc:4.48" level="project" />
     <orderEntry type="library" name="mysql:mysql-connector-java:5.1.34" level="project" />
+    <orderEntry type="library" name="com.j256.ormlite:ormlite-jdbc:4.48" level="project" />
   </component>
 </module>

@@ -1,3 +1,5 @@
+package main.java.models;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
@@ -12,7 +14,7 @@ public class FreeMarkerTemplateEngine extends TemplateEngine {
 
     private Configuration configuration;
 
-    protected FreeMarkerTemplateEngine()
+    public FreeMarkerTemplateEngine()
     {
         this.configuration = createFreemarkerConfiguration();
     }
@@ -40,7 +42,7 @@ public class FreeMarkerTemplateEngine extends TemplateEngine {
         try {
             Configuration retVal = new Configuration();
             retVal.setClassForTemplateLoading(FreeMarkerTemplateEngine.class, "freemarker");
-            retVal.setDirectoryForTemplateLoading(new File("src/public/templates"));
+            retVal.setDirectoryForTemplateLoading(new File("src/main/resources/public/templates"));
             return retVal;
         } catch (IOException e) {
             throw new IllegalArgumentException(e);
