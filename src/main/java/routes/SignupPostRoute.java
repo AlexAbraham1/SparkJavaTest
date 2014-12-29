@@ -1,6 +1,7 @@
 package main.java.routes;
 
 import main.java.models.DBC;
+import main.java.models.Email;
 import main.java.models.PasswordHash;
 import main.java.models.User;
 import spark.ModelAndView;
@@ -8,6 +9,8 @@ import spark.Request;
 import spark.Response;
 import spark.TemplateViewRoute;
 
+import javax.mail.internet.AddressException;
+import javax.mail.internet.InternetAddress;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.HashMap;
@@ -38,6 +41,15 @@ public class SignupPostRoute implements TemplateViewRoute {
             response.status(400);
             Map<String, Object> attributes = new HashMap<String, Object>();
             attributes.put("message", "You forgot your email!");
+            attributes.put("fullname", name);
+            attributes.put("email", email);
+            return modelAndView(attributes, "signup.ftl");
+        }
+
+        if (!Email.isValidEmailAddress(email)) {
+            response.status(400);
+            Map<String, Object> attributes = new HashMap<String, Object>();
+            attributes.put("message", "That email address is not valid!");
             attributes.put("fullname", name);
             attributes.put("email", email);
             return modelAndView(attributes, "signup.ftl");

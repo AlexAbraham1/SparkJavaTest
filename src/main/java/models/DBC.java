@@ -5,10 +5,9 @@ import com.j256.ormlite.dao.DaoManager;
 import com.j256.ormlite.jdbc.JdbcConnectionSource;
 import com.j256.ormlite.support.ConnectionSource;
 import com.j256.ormlite.table.TableUtils;
+import main.java.configs.SQLConfig;
 
-import java.sql.Date;
 import java.sql.SQLException;
-import java.sql.Timestamp;
 import java.util.List;
 
 /**
@@ -16,9 +15,11 @@ import java.util.List;
  */
 public class DBC {
 
-    private static String databaseURL = "jdbc:mysql://127.0.0.1:8889/spark";
-    private static String databaseUser = "root";
-    private static String databasePassword = "root";
+    //SQLConfig is a class in main.java.configs package which was NOT committed to GitHub
+    //Create your own class and add fields for MySQL url, user, and password
+    private static final String databaseURL = SQLConfig.URL;
+    private static final String databaseUser = SQLConfig.USER;
+    private static final String databasePassword = SQLConfig.PASS;
 
     private static ConnectionSource connectionSource;
     private static Dao<User, String> userDao;
@@ -38,6 +39,7 @@ public class DBC {
     {
         try {
             userDao.create(user);
+            Email.sendEmail(user.getEmail(), "Welcome!", "Thanks for signung up on the SparkJava Server!");
         } catch (SQLException e) {
             throw new IllegalArgumentException(e);
         }

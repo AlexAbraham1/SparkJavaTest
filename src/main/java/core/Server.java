@@ -2,17 +2,15 @@ package main.java.core;
 
 import main.java.models.*;
 import main.java.routes.*;
+
 import spark.Filter;
-
-import java.sql.SQLException;
-
 import static spark.Spark.*;
 
 public class Server {
 
     private static final String[] protectedRoutes = {"/me", "/passwordReset"};
 
-    public static void main(String[] args) throws SQLException {
+    public static void main(String[] args) {
 
         FreeMarkerTemplateEngine ftl = new FreeMarkerTemplateEngine();
 
