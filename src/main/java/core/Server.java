@@ -8,7 +8,7 @@ import java.sql.SQLException;
 
 import static spark.Spark.*;
 
-public class Test {
+public class Server {
 
     private static final String[] protectedRoutes = {"/me", "/passwordReset"};
 
