@@ -11,6 +11,8 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Properties;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class Email {
 
@@ -32,46 +34,58 @@ public class Email {
 
     public static void sendEmail(String address, String subject, String text)
     {
-        try {
+        Runnable r = () -> {
+            try {
 
-            Session session = getSession();
+                Session session = getSession();
 
-            MimeMessage message = new MimeMessage(session);
+                MimeMessage message = new MimeMessage(session);
 
-            message.setFrom(new InternetAddress("SparkJava Test Server <" + gmailUser + ">"));
-            message.setRecipient(Message.RecipientType.TO, new InternetAddress(address));
-            message.setSubject(subject);
-            message.setText(text);
+                message.setFrom(new InternetAddress("SparkJava Test Server <" + gmailUser + ">"));
+                message.setRecipient(Message.RecipientType.TO, new InternetAddress(address));
+                message.setSubject(subject);
+                message.setText(text);
 
-            Transport.send(message);
+                Transport.send(message);
 
-        } catch (AddressException e) {
-            throw new IllegalArgumentException(e);
-        } catch (MessagingException e) {
-            throw new IllegalArgumentException(e);
-        }
+            } catch (AddressException e) {
+                throw new IllegalArgumentException(e);
+            } catch (MessagingException e) {
+                throw new IllegalArgumentException(e);
+            }
+        };
+
+        ExecutorService executor = Executors.newCachedThreadPool();
+        executor.submit(r);
+
     }
 
     public static void sendEmailHTML(String address, String subject, String template)
     {
-        try {
 
-            Session session = getSession();
+        Runnable r = () -> {
+            try {
 
-            MimeMessage message = new MimeMessage(session);
+                Session session = getSession();
 
-            message.setFrom(new InternetAddress("SparkJava Test Server <" + gmailUser + ">"));
-            message.setRecipient(Message.RecipientType.TO, new InternetAddress(address));
-            message.setSubject(subject);
-            message.setContent(template, "text/html; charset=utf-8");
+                MimeMessage message = new MimeMessage(session);
 
-            Transport.send(message);
+                message.setFrom(new InternetAddress("SparkJava Test Server <" + gmailUser + ">"));
+                message.setRecipient(Message.RecipientType.TO, new InternetAddress(address));
+                message.setSubject(subject);
+                message.setContent(template, "text/html; charset=utf-8");
 
-        } catch (AddressException e) {
-            throw new IllegalArgumentException(e);
-        } catch (MessagingException e) {
-            throw new IllegalArgumentException(e);
-        }
+                Transport.send(message);
+
+            } catch (AddressException e) {
+                throw new IllegalArgumentException(e);
+            } catch (MessagingException e) {
+                throw new IllegalArgumentException(e);
+            }
+        };
+
+        ExecutorService executor = Executors.newCachedThreadPool();
+        executor.submit(r);
     }
 
     private static Session getSession()
