@@ -6,6 +6,10 @@ import javax.mail.*;
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Properties;
 
 public class Email {
@@ -48,6 +52,28 @@ public class Email {
         }
     }
 
+    public static void sendEmailHTML(String address, String subject, String template)
+    {
+        try {
+
+            Session session = getSession();
+
+            MimeMessage message = new MimeMessage(session);
+
+            message.setFrom(new InternetAddress("SparkJava Test Server <" + gmailUser + ">"));
+            message.setRecipient(Message.RecipientType.TO, new InternetAddress(address));
+            message.setSubject(subject);
+            message.setContent(template, "text/html; charset=utf-8");
+
+            Transport.send(message);
+
+        } catch (AddressException e) {
+            throw new IllegalArgumentException(e);
+        } catch (MessagingException e) {
+            throw new IllegalArgumentException(e);
+        }
+    }
+
     private static Session getSession()
     {
         Properties properties = System.getProperties();
@@ -64,5 +90,15 @@ public class Email {
         });
 
         return session;
+    }
+
+    public static String getStringFromTemplate(String filename)
+    {
+        try {
+            byte[] encoded = Files.readAllBytes(Paths.get("src/main/resources/email_templates/" + filename));
+            return new String(encoded, StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            throw new IllegalArgumentException(e);
+        }
     }
 }

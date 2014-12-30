@@ -42,7 +42,7 @@ public class FreeMarkerTemplateEngine extends TemplateEngine {
         try {
             Configuration retVal = new Configuration();
             retVal.setClassForTemplateLoading(FreeMarkerTemplateEngine.class, "freemarker");
-            retVal.setDirectoryForTemplateLoading(new File("src/main/resources/public/templates"));
+            retVal.setDirectoryForTemplateLoading(new File("src/main/resources/public/ftl_templates"));
             return retVal;
         } catch (IOException e) {
             throw new IllegalArgumentException(e);

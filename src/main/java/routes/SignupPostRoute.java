@@ -9,8 +9,6 @@ import spark.Request;
 import spark.Response;
 import spark.TemplateViewRoute;
 
-import javax.mail.internet.AddressException;
-import javax.mail.internet.InternetAddress;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.HashMap;
@@ -30,56 +28,38 @@ public class SignupPostRoute implements TemplateViewRoute {
 
         if (name.equals("")) {
             response.status(400);
-            Map<String, Object> attributes = new HashMap<String, Object>();
-            attributes.put("message", "You forgot your name!");
-            attributes.put("fullname", name);
-            attributes.put("email", email);
+            Map<String, Object> attributes = getAttributes("You forgot your name!", name, email);
             return modelAndView(attributes, "signup.ftl");
         }
 
         if (email.equals("")) {
             response.status(400);
-            Map<String, Object> attributes = new HashMap<String, Object>();
-            attributes.put("message", "You forgot your email!");
-            attributes.put("fullname", name);
-            attributes.put("email", email);
+            Map<String, Object> attributes = getAttributes("You forgot your email!", name, email);
             return modelAndView(attributes, "signup.ftl");
         }
 
         if (!Email.isValidEmailAddress(email)) {
             response.status(400);
-            Map<String, Object> attributes = new HashMap<String, Object>();
-            attributes.put("message", "That email address is not valid!");
-            attributes.put("fullname", name);
-            attributes.put("email", email);
+            Map<String, Object> attributes = getAttributes("That email address is not valid!", name, email);
             return modelAndView(attributes, "signup.ftl");
         }
 
         if (userExists(email)) {
             response.status(400);
-            Map<String, Object> attributes = new HashMap<String, Object>();
-            attributes.put("message", "That email is already in out database!");
-            attributes.put("fullname", name);
-            attributes.put("email", email);
+            Map<String, Object> attributes = getAttributes("That email is already in our database!", name, email);
             return modelAndView(attributes, "signup.ftl");
         }
 
         if (password.equals("") || password2.equals("")) {
             response.status(400);
-            Map<String, Object> attributes = new HashMap<String, Object>();
-            attributes.put("message", "You forgot passwords!");
-            attributes.put("fullname", name);
-            attributes.put("email", email);
+            Map<String, Object> attributes = getAttributes("You forgot passwords!", name, email);
             return modelAndView(attributes, "signup.ftl");
         }
 
         //Passwords don't match
         if (!password.equals(password2)) {
             response.status(422);
-            Map<String, Object> attributes = new HashMap<String, Object>();
-            attributes.put("message", "Passwords don't match!");
-            attributes.put("fullname", name);
-            attributes.put("email", email);
+            Map<String, Object> attributes = getAttributes("Passwords don't match!", name, email);
             return modelAndView(attributes, "signup.ftl");
         }
 
@@ -93,6 +73,9 @@ public class SignupPostRoute implements TemplateViewRoute {
         newUser.setPassword(password);
 
         DBC.addUser(newUser);
+
+        String template = Email.getStringFromTemplate("welcome.html").replace("{{user.name}}", newUser.getName());
+        Email.sendEmailHTML(newUser.getEmail(), "Test Email", template);
 
         //Add user to session and go to /me
         request.session(true).attribute("user", newUser);
@@ -116,5 +99,16 @@ public class SignupPostRoute implements TemplateViewRoute {
         } catch (NoSuchAlgorithmException e) {
             throw new IllegalArgumentException(e);
         }
+    }
+
+    private HashMap<String, Object> getAttributes(String message, String name, String email)
+    {
+        HashMap<String, Object> attributes = new HashMap<String, Object>();
+
+        attributes.put("message", message);
+        attributes.put("fullname", name);
+        attributes.put("email", email);
+
+        return attributes;
     }
 }

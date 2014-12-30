@@ -39,7 +39,6 @@ public class DBC {
     {
         try {
             userDao.create(user);
-            Email.sendEmail(user.getEmail(), "Welcome!", "Thanks for signung up on the SparkJava Server!");
         } catch (SQLException e) {
             throw new IllegalArgumentException(e);
         }
