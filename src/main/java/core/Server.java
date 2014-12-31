@@ -34,7 +34,7 @@ public class Server {
 
         get("/me", new ProfileGetRoute(), ftl);
 
-        post("/passwordReset", new PasswordResetPostRoute(), ftl);
+        post("/passwordReset", new PasswordChangePostRoute(), ftl);
 
         get("/logout", new LogoutGetRoute(), ftl);
     }

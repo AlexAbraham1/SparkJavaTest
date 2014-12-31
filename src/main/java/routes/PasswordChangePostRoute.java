@@ -16,7 +16,7 @@ import java.util.Map;
 
 import static spark.Spark.modelAndView;
 
-public class PasswordResetPostRoute implements TemplateViewRoute {
+public class PasswordChangePostRoute implements TemplateViewRoute {
 
     @Override
     public ModelAndView handle(Request request, Response response) {
@@ -28,45 +28,26 @@ public class PasswordResetPostRoute implements TemplateViewRoute {
 
         if (oldPassword.equals("")) {
             response.status(400);
-            Map<String, Object> attributes = new HashMap<String, Object>();
-            attributes.put("badMessage", "You forgot the old password!");
-            attributes.put("user", user);
-            attributes.put("oldPassword", oldPassword);
-            attributes.put("newPassword", newPassword);
-            attributes.put("newPassword2", newPassword2);
+            Map<String, Object> attributes = getBadAttributes("You forgot the old password!", user, oldPassword, newPassword, newPassword2);
             return modelAndView(attributes, "me.ftl");
         }
 
         if (newPassword.equals("") || newPassword2.equals("")) {
             response.status(400);
-            Map<String, Object> attributes = new HashMap<String, Object>();
-            attributes.put("badMessage", "You forgot the new passwords!");
-            attributes.put("user", user);
-            attributes.put("oldPassword", oldPassword);
-            attributes.put("newPassword", newPassword);
-            attributes.put("newPassword2", newPassword2);
+            Map<String, Object> attributes = getBadAttributes("You forgot the new passwords!", user, oldPassword, newPassword, newPassword2);
             return modelAndView(attributes, "me.ftl");
         }
 
         if (!validatePassword(oldPassword, user.getPassword())) {
             response.status(400);
-            Map<String, Object> attributes = new HashMap<String, Object>();
+            Map<String, Object> attributes = getBadAttributes("Old password didn't match!", user, oldPassword, newPassword, newPassword2);
             attributes.put("badMessage", "Old password didn't match!");
-            attributes.put("user", user);
-            attributes.put("oldPassword", oldPassword);
-            attributes.put("newPassword", newPassword);
-            attributes.put("newPassword2", newPassword2);
             return modelAndView(attributes, "me.ftl");
         }
 
         if (!newPassword.equals(newPassword2)) {
             response.status(400);
-            Map<String, Object> attributes = new HashMap<String, Object>();
-            attributes.put("badMessage", "New passwords don't match!");
-            attributes.put("user", user);
-            attributes.put("oldPassword", oldPassword);
-            attributes.put("newPassword", newPassword);
-            attributes.put("newPassword2", newPassword2);
+            Map<String, Object> attributes = getBadAttributes("New passwords don't match!", user, oldPassword, newPassword, newPassword2);
             return modelAndView(attributes, "me.ftl");
         }
 
@@ -103,5 +84,17 @@ public class PasswordResetPostRoute implements TemplateViewRoute {
         } catch (NoSuchAlgorithmException e) {
             throw new IllegalArgumentException(e);
         }
+    }
+
+    private HashMap<String, Object> getBadAttributes(String message, User user, String oldPassword, String newPassword, String newPassword2)
+    {
+        HashMap<String, Object> attributes = new HashMap<String, Object>();
+        attributes.put("badMessage", message);
+        attributes.put("user", user);
+        attributes.put("oldPassword", oldPassword);
+        attributes.put("newPassword", newPassword);
+        attributes.put("newPassword2", newPassword2);
+
+        return attributes;
     }
 }
